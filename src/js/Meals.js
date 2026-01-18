@@ -20,7 +20,7 @@ export default class Meals {
     }
   }
 
-  displayMeals(MealsArray) {
+  async displayMeals(MealsArray) {
     let box = "";
     MealsArray.forEach((meal) => {
       box += `  <div

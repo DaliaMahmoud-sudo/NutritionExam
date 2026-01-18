@@ -1,7 +1,7 @@
 export default class Log {
-  constructor(meal, totalCal) {
+  constructor(meal, nutrients) {
     this.meal = meal;
-    this.totalCal = totalCal;
+    this.nutrients = nutrients;
   }
   logs = JSON.parse(localStorage.getItem("logs")) || [];
   modal = document.getElementById("log-meal-modal");
@@ -16,8 +16,7 @@ export default class Log {
 
     const logEntry = {
         ...this.meal,  
-        calouries:this.totalCal/this.servings,              
-        displayServings: this.servings,   
+        ...this.nutrients,  
         loggedAt: timeLabel,        
         loggedDate: dateLabel,      
 
@@ -28,7 +27,6 @@ export default class Log {
 
     this.displayFoodLog();
   }
-
   displayLogModal() {
     this.modal.classList.replace("loading", "fixed");
     this.modal.innerHTML = `
@@ -47,7 +45,7 @@ export default class Log {
                         <button id="decrease-servings" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
                             <i class="text-gray-600" data-fa-i2svg=""><svg class="svg-inline--fa fa-minus" data-prefix="fas" data-icon="minus" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32z"></path></svg></i>
                         </button>
-                        <input type="number" id="meal-servings" value="${this.servings}" min="0.5" max="10" step="0.5" class="w-20 text-center text-xl font-bold border-2 border-gray-200 rounded-lg py-2">
+                        <input type="number" id="meal-servings" value="${this.nutrients.servings}" min="0.5" max="10" step="0.5" class="w-20 text-center text-xl font-bold border-2 border-gray-200 rounded-lg py-2">
                         <button id="increase-servings" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
                             <i class="text-gray-600" data-fa-i2svg=""><svg class="svg-inline--fa fa-plus" data-prefix="fas" data-icon="plus" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"></path></svg></i>
                         </button>
@@ -59,19 +57,19 @@ export default class Log {
                     <p class="text-sm text-gray-600 mb-2">Estimated nutrition per serving:</p>
                     <div class="grid grid-cols-4 gap-2 text-center">
                         <div>
-                            <p class="text-lg font-bold text-emerald-600" id="modal-calories">${this.totalCal}</p>
+                            <p class="text-lg font-bold text-emerald-600" id="modal-calories">${this.nutrients.totals.calories}</p>
                             <p class="text-xs text-gray-500">Calories</p>
                         </div>
                         <div>
-                            <p class="text-lg font-bold text-blue-600" id="modal-protein">95g</p>
+                            <p class="text-lg font-bold text-blue-600" id="modal-protein">${this.nutrients.totals.protein}g</p>
                             <p class="text-xs text-gray-500">Protein</p>
                         </div>
                         <div>
-                            <p class="text-lg font-bold text-amber-600" id="modal-carbs">107g</p>
+                            <p class="text-lg font-bold text-amber-600" id="modal-carbs">${this.nutrients.totals.carbs}g</p>
                             <p class="text-xs text-gray-500">Carbs</p>
                         </div>
                         <div>
-                            <p class="text-lg font-bold text-purple-600" id="modal-fat">149g</p>
+                            <p class="text-lg font-bold text-purple-600" id="modal-fat">${this.nutrients.totals.fat}g</p>
                             <p class="text-xs text-gray-500">Fat</p>
                         </div>
                     </div>
@@ -133,12 +131,13 @@ export default class Log {
       });
   }
   updateNutrition(servings) {
-    const calculated = (this.totalCal * servings).toFixed(0);
+    const calculated = (this.nutrients.totals.calories * servings).toFixed(0);
     document.getElementById("modal-calories").innerText = calculated;
   }
   displayFoodLog() {
     this.displayChart();
     this.displayProgress();
+    
     document.getElementById("foodlog-date").innerHTML =
       new Date().toLocaleDateString(undefined, {
         weekday: "long",
@@ -209,7 +208,7 @@ export default class Log {
                       <div>
                         <p class="font-semibold text-gray-900">${log.name}</p>
                         <p class="text-sm text-gray-500">
-                          ${log.displayServings} serving
+                          ${log.servings} serving
                           <span class="mx-1">•</span>
                           <span class="text-emerald-600">Recipe</span>
                         </p>
@@ -218,13 +217,13 @@ export default class Log {
                     </div>
                     <div class="flex items-center gap-4">
                       <div class="text-right">
-                        <p class="text-lg font-bold text-emerald-600">${log.calouries}</p>
+                        <p class="text-lg font-bold text-emerald-600">${log.totals.calories}</p>
                         <p class="text-xs text-gray-500">kcal</p>
                       </div>
                       <div class="hidden md:flex gap-2 text-xs text-gray-500">
-                        <span class="px-2 py-1 bg-blue-50 rounded">95g P</span>
-                        <span class="px-2 py-1 bg-amber-50 rounded">107g C</span>
-                        <span class="px-2 py-1 bg-purple-50 rounded">149g F</span>
+                        <span class="px-2 py-1 bg-blue-50 rounded">${log.totals.protein}g P</span>
+                        <span class="px-2 py-1 bg-amber-50 rounded">${log.totals.carbs}g C</span>
+                        <span class="px-2 py-1 bg-purple-50 rounded">${log.totals.fat}g F</span>
                       </div>
                       <button class="remove-foodlog-item text-gray-400 hover:text-red-500 transition-all p-2"
                         data-index="${index}">
@@ -269,15 +268,68 @@ export default class Log {
     const dailyGoal = 2000; 
     const progressPercent = Math.min((totalCalories / dailyGoal) * 100, 100);
     progressBar.style.width = `${progressPercent}%`;
-  }
-getCaloriesByDate(targetDate) {
-    const dailyLogs = this.logs.filter(log => log.loggedDate === targetDate);
-    const total = dailyLogs.reduce((sum, log) => {
-        return sum + parseFloat(log.calouries || 0);
-    }, 0);
+
+    const totalProtein = this.getProtien();
+    document.getElementById("protein-progress").innerText = `${totalProtein.toFixed(0)}/50g`;
+    const progressProteinBar = document.getElementById("protein-progress-bar");
+    const dailypGoal = 50; 
+    const progresspPercent = Math.min((totalProtein / dailypGoal) * 100, 100);
+    progressProteinBar.style.width = `${progresspPercent}%`;
 
     
-    return total;
+    const totalCarbs = this.getCarb();
+    document.getElementById("carbs-progress").innerText = `${totalCarbs.toFixed(0)}/250g`;
+    const progressCarbBar = document.getElementById("carbs-progress-bar");
+    const dailycGoal = 250; 
+    const progresscPercent = Math.min((totalCarbs / dailycGoal) * 100, 100);
+    progressCarbBar.style.width = `${progresscPercent}%`;
+
+    const totalFat = this.getFat();
+    document.getElementById("fat-progress").innerText = `${totalFat.toFixed(0)}/65g`;
+    const progressFatBar = document.getElementById("fat-progress-bar");
+    const dailyfGoal = 65; 
+    const progressfPercent = Math.min((totalFat / dailyfGoal) * 100, 100);
+    progressFatBar.style.width = `${progressfPercent}%`;
+  }
+
+getCaloriesByDate(targetDate) {
+    const dailyLogs = this.logs.filter(log => log.loggedDate === targetDate);
+    
+    return dailyLogs.reduce((sum, log) => {
+      
+        const calories = log.totals?.calories ?? log.nutrients?.calories ?? 0;
+        
+        return sum + parseFloat(calories);
+    }, 0);
+}
+getProtien() {
+    const dailyLogs = this.logs.filter(log => log.loggedDate === new Date().toLocaleDateString());
+    
+    return dailyLogs.reduce((sum, log) => {
+        const protein = log.totals?.protein ?? log.nutrients?.protein ?? 0;
+        
+        return sum + parseFloat(protein);
+    }, 0);
+}
+getCarb() {
+    const dailyLogs = this.logs.filter(log => log.loggedDate === new Date().toLocaleDateString());
+    
+    return dailyLogs.reduce((sum, log) => {
+      
+        const carbs = log.totals?.carbs ?? log.nutrients?.carbs ?? 0;
+        
+        return sum + parseFloat(carbs);
+    }, 0);
+}
+getFat() {
+    const dailyLogs = this.logs.filter(log => log.loggedDate === new Date().toLocaleDateString());
+    
+    return dailyLogs.reduce((sum, log) => {
+        
+        const fat = log.totals?.fat ?? log.nutrients?.fat ?? 0;
+        
+        return sum + parseFloat(fat);
+    }, 0);
 }
 displayChart() {
     const chartContainer = document.getElementById("weekly-chart");

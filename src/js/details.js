@@ -3,8 +3,8 @@ import Log from "./logs.js";
 export default class Details {
   mealDetails = document.getElementById("meal-details");
   loading=document.getElementById("app-loading-overlay")
-  totalCal=0;
   ApiKey="IYUBHhAGfmbTtoyV8BecO6bx75xnJkNuapmaD4AZ"
+  nutrition=null;
   async GetDetails(id) {
     this.loading.classList.remove("loading");
     const response = await fetch(
@@ -14,17 +14,20 @@ export default class Details {
       const data = await response.json();
       console.log(data);
       if (data.message == "success") {
-        this.loading.classList.add("loading");
-        this.getCal(data.result);
-    
-        
+        this.loading.classList.add("loading");      
+        this.nutrition=await this.getCal(data.result);
+       if (this.nutrition) {
+            this.displayDetails(data.result, this.nutrition);
+            this.loading.classList.add("loading"); 
+        }
       }
     }
   }
+
   async getCal(meal){
     this.loading.classList.remove("loading");
     const recipeData = {
-        title: meal.name,
+        recipeName: meal.name,
         ingredients: meal.ingredients.map(item => `${item.measure} ${item.ingredient}`)
     };
    const response = await fetch(`https://nutriplan-api.vercel.app/api/nutrition/analyze`, {
@@ -38,17 +41,17 @@ export default class Details {
     if (response.ok) {
       const data = await response.json();
       console.log(data);
-      if (data.message == "success") {
+     
+        console.log(data.data);
+        return data.data;
+
         
-        this.totalCal=data.totalCalories;
-        this.displayDetails(meal);
-        this.loading.classList.add("loading");
-      }
+      
     }
 
   }
 
-  displayDetails(meal) {
+  async displayDetails(meal, nutrition){ 
     this.mealDetails.innerHTML=`<div class="max-w-7xl mx-auto">
         <!-- Back Button -->
         <button id="back-to-meals-btn"
@@ -78,11 +81,11 @@ export default class Details {
                 </span>
                 <span class="flex items-center gap-2">
                   <i class="fa-solid fa-utensils"></i>
-                  <span id="hero-servings">4 servings</span>
+                  <span id="hero-servings">${nutrition.servings} servings</span>
                 </span>
                 <span class="flex items-center gap-2">
                   <i class="fa-solid fa-fire"></i>
-                  <span id="hero-calories">485 cal/serving</span>
+                  <span id="hero-calories">${nutrition.perServing.calories} cal/serving</span>
                 </span>
               </div>
             </div>
@@ -174,8 +177,8 @@ export default class Details {
 
                 <div class="text-center py-4 mb-4 bg-linear-to-br from-emerald-50 to-teal-50 rounded-xl">
                   <p class="text-sm text-gray-600">Calories per serving</p>
-                  <p class="text-4xl font-bold text-emerald-600">${this.totalCal/4}</p>
-                  <p class="text-xs text-gray-500 mt-1">Total: ${this.totalCal} cal</p>
+                  <p class="text-4xl font-bold text-emerald-600">${nutrition.perServing.calories}</p>
+                  <p class="text-xs text-gray-500 mt-1">Total: ${nutrition.totals.calories} cal</p>
                 </div>
 
                 <div class="space-y-4">
@@ -184,10 +187,10 @@ export default class Details {
                       <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
                       <span class="text-gray-700">Protein</span>
                     </div>
-                    <span class="font-bold text-gray-900">42g</span>
+                    <span class="font-bold text-gray-900">${nutrition.totals.protein}g</span>
                   </div>
                   <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="bg-emerald-500 h-2 rounded-full" style="width: 84%"></div>
+                    <div class="bg-emerald-500 h-2 rounded-full" style="width: ${Math.min(nutrition.totals.protein, 100)}%"></div>
                   </div>
 
                   <div class="flex items-center justify-between">
@@ -195,10 +198,10 @@ export default class Details {
                       <div class="w-3 h-3 rounded-full bg-blue-500"></div>
                       <span class="text-gray-700">Carbs</span>
                     </div>
-                    <span class="font-bold text-gray-900">52g</span>
+                    <span class="font-bold text-gray-900">${nutrition.totals.carbs}g</span>
                   </div>
                   <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="bg-blue-500 h-2 rounded-full" style="width: 17%"></div>
+                    <div class="bg-blue-500 h-2 rounded-full" style="width: ${Math.min(nutrition.totals.carbs, 100)}%"></div>
                   </div>
 
                   <div class="flex items-center justify-between">
@@ -206,10 +209,10 @@ export default class Details {
                       <div class="w-3 h-3 rounded-full bg-purple-500"></div>
                       <span class="text-gray-700">Fat</span>
                     </div>
-                    <span class="font-bold text-gray-900">8g</span>
+                    <span class="font-bold text-gray-900">${nutrition.totals.fat}g</span>
                   </div>
                   <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="bg-purple-500 h-2 rounded-full" style="width: 12%"></div>
+                    <div class="bg-purple-500 h-2 rounded-full" style="width: ${Math.min(nutrition.totals.fat, 100)}%"></div>
                   </div>
 
                   <div class="flex items-center justify-between">
@@ -217,10 +220,10 @@ export default class Details {
                       <div class="w-3 h-3 rounded-full bg-orange-500"></div>
                       <span class="text-gray-700">Fiber</span>
                     </div>
-                    <span class="font-bold text-gray-900">4g</span>
+                    <span class="font-bold text-gray-900">${nutrition.totals.fiber}g</span>
                   </div>
                   <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="bg-orange-500 h-2 rounded-full" style="width: 14%"></div>
+                    <div class="bg-orange-500 h-2 rounded-full" style="width: ${Math.min(nutrition.totals.fiber, 100)}%"></div>
                   </div>
 
                   <div class="flex items-center justify-between">
@@ -228,10 +231,10 @@ export default class Details {
                       <div class="w-3 h-3 rounded-full bg-pink-500"></div>
                       <span class="text-gray-700">Sugar</span>
                     </div>
-                    <span class="font-bold text-gray-900">12g</span>
+                    <span class="font-bold text-gray-900">${nutrition.totals.sugar}g</span>
                   </div>
                   <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="bg-pink-500 h-2 rounded-full" style="width: 24%"></div>
+                    <div class="bg-pink-500 h-2 rounded-full" style="width: ${Math.min(nutrition.totals.sugar, 100)}%"></div>
                   </div>
                 </div>
 
@@ -267,10 +270,11 @@ export default class Details {
     this.showMainPage();
    })
    document.getElementById("log-meal-btn").addEventListener("click",()=>{
-    const log=new Log(meal,this.totalCal);
+    const log=new Log(meal, this.nutrition);
     log.displayLogModal();
   });
-}
+
+  }
   showMainPage(){
             document.getElementById("meal-details").classList.add("loading")
         document.getElementById("search-filters-section").classList.remove("loading")
