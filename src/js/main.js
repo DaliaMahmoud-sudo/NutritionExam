@@ -10,10 +10,10 @@ import Meals from "./Meals.js"
 import Log from "./logs.js"
 import Products from "./products.js"
 const ApiKey="IYUBHhAGfmbTtoyV8BecO6bx75xnJkNuapmaD4AZ"
-// let areas= new Areas();
-// areas.GetAllAreas(); 
-// let types=new Type();
-// types.GetAllTypes();
+let areas= new Areas();
+areas.GetAllAreas(); 
+let types=new Type();
+types.GetAllTypes();
 let logs=new Log();
 logs.displayFoodLog();
 
