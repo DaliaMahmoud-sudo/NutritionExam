@@ -137,7 +137,7 @@ export default class Log {
   displayFoodLog() {
     this.displayChart();
     this.displayProgress();
-    
+        let todayLogs = this.getMealsBydate(new Date().toLocaleDateString());
     document.getElementById("foodlog-date").innerHTML =
       new Date().toLocaleDateString(undefined, {
         weekday: "long",
@@ -145,14 +145,15 @@ export default class Log {
         day: "numeric",});
 
     document.getElementById("logNo").innerHTML =
-      `Logged Items (${this.logs.length})`;
+      `Logged Items (${todayLogs.length})`;
     if (this.logs.length === 0) {
       document.getElementById("clear-foodlog").classList.add("loading");
     } else {
       document.getElementById("clear-foodlog").classList.remove("loading");
     }
     let logBox = "";
-    this.logs.forEach((log,index) => {
+
+    todayLogs.forEach((log,index) => {
       if(log.hasOwnProperty('barcode')){
        logBox += ` <div class="border-t border-gray-200 pt-4">
                 <div class="space-y-3 max-h-96 overflow-y-auto">
@@ -292,6 +293,9 @@ export default class Log {
     progressFatBar.style.width = `${progressfPercent}%`;
   }
 
+  getMealsBydate(targetDate) {
+    return this.logs.filter(log => log.loggedDate === targetDate);
+};
 getCaloriesByDate(targetDate) {
     const dailyLogs = this.logs.filter(log => log.loggedDate === targetDate);
     
